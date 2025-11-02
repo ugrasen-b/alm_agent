@@ -183,11 +183,17 @@ def calculate_margin(
         row_idx = T + t
         vol_t = vol_paths[:,t]
         cr_t = cr_paths[:,t]
-        tranches_t = tranches_array[:,:row_idx-1,:]*active_tranch_multiplier
+        tranches_t = tranches_array[:,t:row_idx-1,:]*active_tranch_multiplier
         locked_volume = tranches_t.sum(axis=(1,2))
         free_volume = vol_t - locked_volume
         target_volume = free_volume [:, None]* strategy_array
         target_tranches = target_volume/TENORS
+        # adding new tranches
+        tranches_array[:,row_idx,:] = target_tranches
+        new_allocations = target_tranches.sum(axis=1)
+        total_allocated_volume = locked_volume + new_allocations
+        residual_allocations = vol_t - total_allocated_volume
+        tranches_array[:, row_idx, 0] += residual_allocations
         
 
     # --- TODO: your implementation here ---
@@ -213,6 +219,6 @@ def calculate_margin(
     #         # margin_array[s, t] = (bond_income - client_cost) / vol_paths[s, t]
     #         pass
 
-    return margin_array
+    return tranches_array
 
-calculate_margin(yc_paths, cr, vol_paths, initial_portfolio, historical_yc, np.array([0.25,0.25,0.25,0.25]))
+tranches_array = calculate_margin(yc_paths, cr, vol_paths, initial_portfolio, historical_yc, np.array([0.25,0.25,0.25,0.25]))
