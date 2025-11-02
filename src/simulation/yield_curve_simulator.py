@@ -7,6 +7,9 @@ Created on Sat Nov  1 15:49:19 2025
 
 import numpy as np
 import pandas as pd
+from src.utils.config import load_config
+
+cfg = load_config()
 
 class YieldCurveSimulator:
     """
